@@ -3,3 +3,4 @@ dist/
 .backup/
 *.local
 .DS_Store
+bg-src/

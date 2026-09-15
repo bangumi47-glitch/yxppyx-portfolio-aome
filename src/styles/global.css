@@ -156,6 +156,7 @@ body {
   background: var(--accent-soft);
   padding: 3px 11px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .tag--hot {
@@ -1103,7 +1104,8 @@ body {
 .mps {
   min-height: 100vh;
   padding-bottom: 120px;
-  background-color: var(--bg);
+  /* 底色让位给整页固定背景，只留极淡的氛围渐变 */
+  background-color: transparent;
   background-image:
     radial-gradient(ellipse at 12% 8%, rgba(99, 102, 241, 0.06), transparent 55%),
     radial-gradient(ellipse at 88% 60%, rgba(56, 189, 248, 0.05), transparent 55%);
@@ -1113,8 +1115,43 @@ body {
 .mps__hero {
   padding: 120px 0 72px;
   text-align: center;
-  background: linear-gradient(180deg, #0c0d1f, #1a1740 60%, #14213d);
+  /* 半透明渐变：只比内容区略压一点，避免首屏和下方出现明显的亮度断层 */
+  background: linear-gradient(
+    180deg,
+    rgba(10, 12, 28, 0.34) 0%,
+    rgba(24, 22, 58, 0.24) 60%,
+    rgba(18, 30, 56, 0.16) 100%
+  );
   color: #fff;
+}
+
+/* ===== 整页固定背景（作品集详情页 / 作品内容页共用）===== */
+.copy-page {
+  position: relative;
+}
+
+/* 背景层固定在视口，内容从上面滚过去 */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 遮罩：压住背景的对比，保证前景文字始终可读 */
+.page-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 11, 22, 0.66);
+}
+
+/* 内容层浮到背景之上 */
+.copy-page > .mps {
+  position: relative;
+  z-index: 1;
 }
 
 .mps__back {
@@ -1345,6 +1382,54 @@ body {
   gap: 56px;
   align-items: start;
   margin-top: 72px;
+}
+
+/* 阅读版：目录贴页面左缘，正文独占中间，两边互不侵占 */
+.mps__layout--read {
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 860px) minmax(300px, 1fr);
+  gap: 0;
+  /* 限宽：超宽屏下别把目录和正文拉得太开，同时保证左右两列够宽 */
+  max-width: 1560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 目录：贴左，且限高后内部滚动 —— 长目录也能全部点到 */
+.mps__layout--read .mps__sidebar {
+  grid-column: 1;
+  justify-self: start;
+  max-width: 260px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  overflow-x: hidden; /* 只要纵向滚动条，内容本身不应横向溢出 */
+  overscroll-behavior: contain;
+}
+
+.mps__layout--read .mps__sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mps__layout--read .mps__sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mps__layout--read .mps__sidebar::-webkit-scrollbar-thumb {
+  background: rgba(140, 160, 200, 0.28);
+  border-radius: 2px;
+}
+
+.mps__layout--read .mps__sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 160, 200, 0.5);
+}
+
+.mps__layout--read .mps__content {
+  grid-column: 2;
+}
+
+/* 没有目录时，正文同样落在中间那一列 */
+.mps__layout--read .mps__content:only-child {
+  grid-column: 2;
+  max-width: 860px;
 }
 
 .mps__sidebar {
@@ -2466,6 +2551,21 @@ body {
     position: static;
   }
 
+  /* 单列下取消阅读版的三列定位，否则内容会被推进隐式列 */
+  .mps__layout--read .mps__sidebar,
+  .mps__layout--read .mps__content,
+  .mps__layout--read .mps__content:only-child {
+    grid-column: 1;
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  /* 单列下目录横向铺满，不需要内部滚动 */
+  .mps__layout--read .mps__sidebar {
+    max-height: none;
+    overflow-y: visible;
+  }
+
   .mps__hero {
     padding: 96px 0 56px;
   }
@@ -2558,4 +2658,413 @@ body {
   .hero__scroll-line {
     animation: none;
   }
+}
+
+/* ===== 文案作品集页 ===== */
+/* 第 1 层：分类卡片 */
+.ci-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.ci-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ci-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.ci-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.ci-card__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ci-card__desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.ci-card__meta {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* 草图素材 */
+.sketches__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.sketch {
+  margin: 0;
+}
+
+.sketch__img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.sketch__caption {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* 第 2 层：作品集详情卡片 */
+.copy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.copy-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px;
+}
+
+.copy-card--link {
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.copy-card--link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.copy-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.copy-card__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.copy-card__summary {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.copy-card__more-link {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* 第 3 层：作品内容正文 */
+/* 正文按一级标题拆成独立卡片，块与块之间留白断开 */
+.cw-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 36px 40px;
+}
+
+.cw-section + .cw-section {
+  margin-top: 28px;
+}
+
+/* 设定补充：附属说明，与正文分成两块 */
+.cw-notes {
+  margin-top: 32px;
+  padding: 26px 32px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(109, 141, 255, 0.22);
+  background: rgba(109, 141, 255, 0.06);
+}
+
+.cw-notes__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #dfe6f7;
+  margin: 0 0 16px;
+}
+
+.cw-note {
+  font-size: 14px;
+  line-height: 1.85;
+  color: #b6c2da;
+  margin: 0 0 12px;
+}
+
+.cw-note:last-child {
+  margin-bottom: 0;
+}
+
+.cw-heading {
+  color: #9db3f5;
+  margin: 0;
+  scroll-margin-top: 100px;
+}
+
+.cw-h1 {
+  font-size: 24px;
+  margin-top: 32px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cw-h1:first-child {
+  margin-top: 0;
+}
+
+.cw-h2 {
+  font-size: 20px;
+  margin-top: 28px;
+}
+
+.cw-h3 {
+  font-size: 17px;
+  margin-top: 22px;
+  color: #e9eef8;
+}
+
+.cw-h4,
+.cw-h5 {
+  font-size: 15px;
+  margin-top: 18px;
+  color: #c9cbe8;
+}
+
+/* 内容里的表格（PDF 表格转过来的） */
+.cw-table-wrap {
+  margin: 16px 0 4px;
+  overflow-x: auto;
+}
+
+.cw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.cw-table th,
+.cw-table td {
+  border: 1px solid var(--border);
+  padding: 9px 13px;
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.7;
+}
+
+.cw-table th {
+  background: rgba(109, 141, 255, 0.09);
+  color: #dfe6f7;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cw-table td {
+  color: #c9cbe8;
+}
+
+/* 首列是这一行的标识，稍作强调 */
+.cw-table td:first-child {
+  color: #dfe6f7;
+  white-space: nowrap;
+}
+
+.cw-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* 卡片内的次级标题（势力 ①②③、子派系、Ⅰ/Ⅱ/Ⅲ）：上方加分隔线，把密集的小节断开 */
+.cw-section .cw-h3,
+.cw-section .cw-h4,
+.cw-section .cw-h5 {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.cw-p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #c9cbe8;
+  margin: 12px 0 0;
+}
+
+/* 词条标签：低饱和钢蓝，和标题的靛蓝同色系但更收敛，不做高亮强调 */
+.cw-p__term {
+  color: #8a9fc4;
+}
+
+/* 冒号跟随正文色，避免强调色被拉长 */
+.cw-p__sep {
+  color: #8b98b8;
+}
+
+/* 可点击放大的图片 */
+.sketch__img,
+.cw-img {
+  cursor: zoom-in;
+}
+
+/* 分组标题：在卡片之外，统领下面若干张卡片 */
+.cw-group-title {
+  margin-bottom: 18px;
+}
+
+.cw-group-title:not(:first-child) {
+  margin-top: 44px;
+}
+
+/* 碎片化叙事：每个序号自成一段，段间用留白 + 细线断开 */
+.cw-fragment + .cw-fragment {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+}
+
+/* 序号引导行（「①一张泛黄的入职调查试卷：」）提亮，作为该段的入口 */
+.cw-fragment__lead {
+  color: #dfe6f7;
+}
+
+.cw-img {
+  display: block;
+  /* 插图别喧宾夺主：宽度封顶，竖版图再限高，避免占掉整屏 */
+  max-width: min(100%, 320px);
+  max-height: 360px;
+  width: auto;
+  height: auto;
+  margin: 20px auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+/* 连续的插图并排成一行 */
+.cw-imgrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0 4px;
+}
+
+.cw-imgrow .cw-img {
+  margin: 0;
+  flex: 1 1 200px;
+  max-width: 300px;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.cw-media {
+  margin: 20px 0;
+}
+
+/* 开头的整片视频：独立成块，与正文拉开距离 */
+.cw-media--lead {
+  margin: 0 0 36px;
+}
+
+.cw-video {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
+  background: #000;
+}
+
+.cw-media-caption {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.cw-actions {
+  margin-top: 24px;
+}
+
+.copy-card__dl {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  color: #fff;
+  background: var(--accent);
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.copy-card__dl:hover {
+  background: var(--accent-2);
+  transform: translateY(-1px);
+}
+
+/* 无侧栏时让内容占满整行（mps__layout 默认是两栏网格） */
+.mps__content:only-child {
+  grid-column: 1 / -1;
+}
+
+/* 首页 Hero 左上角入口 */
+.hero__copywork {
+  position: absolute;
+  top: 88px;
+  left: 48px;
+  z-index: 2;
+  font-size: 13px;
+  color: #9b9ecf;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.hero__copywork:hover {
+  color: #fff;
 }

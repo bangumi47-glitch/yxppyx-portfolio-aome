@@ -49,14 +49,12 @@ export default function Footer() {
   return (
     <footer className="footer" id="about">
       <div className="footer__inner">
-        <p className="footer__title">把判断讲清楚，把产品讲明白。</p>
-
         <div className="footer__layout">
           <div className="footer__card">
             <img className="footer__avatar" src="/logo.jpg" alt="谢煜泉" />
             <h2 className="footer__name">谢煜泉</h2>
             <span className="footer__line" aria-hidden="true" />
-            <p className="footer__role">游戏品牌营销 · 求职中</p>
+            <p className="footer__role">游戏文案策划/游戏品牌营销 · 求职中</p>
             <p className="footer__bio">二次元射击大手子</p>
 
             <button className="footer__mail" type="button" onClick={handleCopy}>
@@ -71,7 +69,7 @@ export default function Footer() {
           </div>
 
           <div className="footer__pitch">
-            <p className="footer__intent">求职意向：游戏品牌营销</p>
+            <p className="footer__intent">求职意向：游戏文案策划/游戏品牌营销</p>
 
             <div className="footer__block">
               <h3 className="footer__block-title">为什么想做</h3>

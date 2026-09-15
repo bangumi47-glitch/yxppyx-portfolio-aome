@@ -11,15 +11,21 @@ import Method from "./components/Method.jsx";
 import AllWorks from "./components/AllWorks.jsx";
 import Footer from "./components/Footer.jsx";
 import Grainient from "./components/Grainient.jsx";
+import BackToTop from "./components/BackToTop.jsx";
 
 gsap.registerPlugin(ScrollTrigger);
 
 // 方法论页体积大，拆成独立 chunk，只有访问 #/method 时才加载
 const MethodPage = lazy(() => import("./pages/MethodPage.jsx"));
+const CopyPage = lazy(() => import("./pages/CopyPage.jsx"));
 
-// hash 路由：#/method 进方法页，其余 hash 留在首页走锚点
-const getPage = () =>
-  window.location.hash.startsWith("#/method") ? "method" : "home";
+// hash 路由：#/method 进方法页，#/copy 进文案作品集页，其余 hash 留在首页走锚点
+const getPage = () => {
+  const h = window.location.hash;
+  if (h.startsWith("#/method")) return "method";
+  if (h.startsWith("#/copy")) return "copy";
+  return "home";
+};
 
 export default function App() {
   const [page, setPage] = useState(getPage);
@@ -32,7 +38,7 @@ export default function App() {
 
   // 页面切换后的滚动：进方法页回顶部，回首页滚到对应板块
   useEffect(() => {
-    if (page === "method") {
+    if (page === "method" || page === "copy") {
       window.scrollTo(0, 0);
       return;
     }
@@ -178,6 +184,16 @@ export default function App() {
     return (
       <Suspense fallback={null}>
         <MethodPage />
+        <BackToTop />
+      </Suspense>
+    );
+  }
+
+  if (page === "copy") {
+    return (
+      <Suspense fallback={null}>
+        <CopyPage />
+        <BackToTop />
       </Suspense>
     );
   }
@@ -206,6 +222,7 @@ export default function App() {
         <AllWorks />
       </main>
       <Footer />
+      <BackToTop />
     </>
   );
 }

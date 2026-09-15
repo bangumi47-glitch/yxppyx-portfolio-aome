@@ -132,6 +132,9 @@ export default function Hero() {
 
   return (
     <section className="hero" id="top" ref={ref}>
+      <a className="hero__copywork" href="#/copy">
+        文案作品集
+      </a>
       <div className="hero__film" aria-hidden="true">
         {FILM_ROWS.map((images, row) => (
           <div className="hero__film-row" key={row}>
