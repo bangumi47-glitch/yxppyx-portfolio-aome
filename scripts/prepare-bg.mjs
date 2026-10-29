@@ -29,6 +29,9 @@ const JOBS = [
   { id: 'xinghen-character', ...HEAVY },
   { id: 'xinghen-story', ...HEAVY },
   { id: 'xinghen-dialogue', ...HEAVY },
+  { id: 'yinyuan', ...HEAVY },
+  { id: 'yinyuan-character', ...HEAVY },
+  { id: 'yinyuan-world', ...HEAVY },
 ];
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
